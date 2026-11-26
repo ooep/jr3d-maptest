@@ -441,7 +441,7 @@ function buildRoot(tmpl, it) {
       o.frustumCulled = false;
       const m = o.material.clone();
       m.transparent = true; m.opacity = 0;
-      fixTrainMat(m);
+      fixTrainMat(m); fixRoofMat(m); /* WALLFIX:车顶压暗0.85 */
       if (nightOn && m.roughnessMap) applyNight(m);
       o.material = m; it.mats.push(m);
     }
@@ -456,7 +456,7 @@ function buildRoot(tmpl, it) {
       const pl = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), it.blobMat);
       pl.rotation.x = -Math.PI / 2;
       pl.position.y = 0.06;
-      pl.scale.set(4.6, meta0.cars[i].len + 2.2, 1);
+      pl.scale.set(3.2, meta0.cars[i].len + 0.6, 1); /* WALLFIX:阴影椭圆收窄(4.6->3.2)、缩短(len+2.2->len+0.6) */
       pl.renderOrder = -1;
       carWraps[i].add(pl); shadows.push(pl);
     }
@@ -502,6 +502,10 @@ function fixTrainMat(m) {
   /* 涂装车身纠正:glTF 未写 metallicFactor 时缺省=1,带 albedo 贴图的漆面被当作纯金属,
      无 envMap 时漫反射=0 → 浅色主题黑块。保留真金属(无贴图/低粗糙度),漆面压到 0.12。 */
   if (m && m.isMeshStandardMaterial && m.map && m.metalness > 0.6 && m.roughness >= 0.35) m.metalness = 0.12;
+}
+/* WALLFIX:纸模车顶在地图淡色底图上几乎看不见(与底图/侧墙同色),仅对 GLB 自带的有名车顶材质(名如 roof1/roof2,高精度 extMaterial 无名故不受影响)略微压暗 0.85,提升车顶可读性。 */
+function fixRoofMat(m) {
+  if (m && m.isMeshStandardMaterial && m.map && typeof m.name === 'string' && /^roof\d*$/.test(m.name)) m.color.multiplyScalar(0.85);
 }
 function applyNight(mat) {
   const uni = { nightAmt: { value: 1.0 } };
@@ -632,7 +636,7 @@ function placeInstances(now) {
     if (Math.abs(it.a - it.aTo) > 0.002) animating = true;
     if (it.aTo === 0 && it.a <= 0.004) { removeInst(k); continue; }
     const vis = Math.min(1, it.a * f);
-    if (it.blobMat) it.blobMat.opacity = 0.68 * vis;
+    if (it.blobMat) it.blobMat.opacity = 0.45 * vis; /* WALLFIX:阴影不透明度0.68->0.45 */
     const pxLen = (it.lenM || 100) / mpp;
     /* 滞回:full→stand 阈 130px,stand→full 需 >165px —— 边界缩放不来回跳变(打磨轮) */
     const wantLod = window.__t3dNoLOD ? 'full'
@@ -647,7 +651,7 @@ function placeInstances(now) {
           it.rootS = st.group.clone(true);
           it.matsS = []; it.carNodesS = [];
           it.rootS.traverse(o => {
-            if (o.isMesh) { o.frustumCulled = false; const m = o.material.clone(); m.transparent = true; m.opacity = 0; fixTrainMat(m); o.material = m; it.matsS.push(m); }
+            if (o.isMesh) { o.frustumCulled = false; const m = o.material.clone(); m.transparent = true; m.opacity = 0; fixTrainMat(m); fixRoofMat(m); o.material = m; it.matsS.push(m); }
             if (o.userData && o.userData.m3dCar) it.carNodesS.push(o);
           });
           accountPerf(it.rootS);
