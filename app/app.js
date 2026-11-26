@@ -13133,7 +13133,15 @@ const M3D = (() => {
   const MAX_CACHE = 20;
   const LOCAL = location.protocol === 'file:' || ['localhost', '127.0.0.1'].includes(location.hostname);
   const BASE = LOCAL ? '' : '/jr3d-maptest';
-  const u = p => LOCAL ? p.replace(/^\//, '') : BASE + p;
+  /* CDN 完整版(2026-11-26):模型文件走 jsDelivr(公开仓库 floral-salad-8734 models-pipeline 分支),
+     瘦站只留完整版 models/index.json(636 个模型)同源提供;basis/ 等其余资源仍走 BASE。 */
+  const CDN_MODELS = 'https://cdn.jsdelivr.net/gh/ooep/floral-salad-8734@models-pipeline/mini-japanrail-3d';
+  const u = p => {
+    if (LOCAL) return p.replace(/^\//, '');
+    if (p === '/models/index.json') return BASE + p; /* 完整版 index.json 由瘦站同源提供 */
+    if (p.startsWith('/models/')) return CDN_MODELS + p; /* 模型:consist.json/GLB/KTX2/贴图全部走 CDN */
+    return BASE + p;
+  };
   /* 模型路径映射表(model_map.json):/models/<车型>/consist.json */
   let modelMap = null, mapP = null, avail = null; /* avail: 可用车型目录清单(models/index.json),缺省 null=不过滤 */
   const failedAt = new Map(); /* path → 上次失败时刻(60s 内不重试,防雪崩) */

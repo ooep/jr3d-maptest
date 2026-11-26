@@ -394,7 +394,7 @@ button { font-family:inherit; }
 <!-- 3D 性能收口(2026-11-07):app.js/train3d.js bump ?v=20261107-t3d26 / t3d16 破缓存
      (standTmpl url→Promise 去重+唯一 URL 并行+回退车 M3D 模板 clone;z16 实例创建门 f≥0.3 滞回+淡出复活;
       stats 增 jsMs/cars/vramMB;__t3dStandLog/__t3dPathCensus 诊断;__t3dNoDedup A/B 旗标) -->
-<link rel="modulepreload" href="/jr3d-maptest/app/app.js?v=20261126-maptest1" crossorigin="anonymous">
+<link rel="modulepreload" href="/jr3d-maptest/app/app.js?v=20261126-maptest2" crossorigin="anonymous">
 
 </head>
 <body>
@@ -969,7 +969,7 @@ window.addEventListener('unhandledrejection', e => { __pushErr('REJ ' + (e.reaso
     "three/addons/": "/jr3d-maptest/vendor/three/jsm/"
 } }
 </script>
-<script type="module" src="/jr3d-maptest/app/app.js?v=20261126-maptest1"></script>
+<script type="module" src="/jr3d-maptest/app/app.js?v=20261126-maptest2"></script>
 <div id="m3dMask"></div>
 <div id="m3dViewer">
   <canvas id="m3dCanvas"></canvas>
