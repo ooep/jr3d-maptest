@@ -734,7 +734,10 @@
   "jr奈良線": "/models/221-4/consist.json",
   "jr日光線": "/models/jr-e131-600-series-yamatn6/consist.json",
   "太多線": "/models/jr-tokai-kiha25/consist.json",
-  "伊勢線": "/models/jr-tokai-kiha25/consist.json"
+  "伊勢線": "/models/jr-tokai-kiha25/consist.json",
+  "田沢湖線": "/models/jr-east-701/consist.json",
+  "鈴鹿線": "/models/kintetsu-2000/consist.json",
+  "tkj城北線": "/models/jr-tokai-kiha11/consist.json"
  },
  "rules": [
   {
@@ -1112,6 +1115,24 @@
     "常総線"
    ],
    "model": "/models/kanto-railway-dc2100-dmu/consist.json"
+  },
+  {
+   "comment": "東北本線東北地区(701系;仙台・盛岡方面)",
+   "exact": [
+    "東北本線"
+   ],
+   "hasStop": [
+    "仙台",
+    "盛岡",
+    "福島",
+    "郡山",
+    "新白河",
+    "小牛田",
+    "一ノ関",
+    "松島",
+    "利府"
+   ],
+   "model": "/models/jr-east-701/consist.json"
   },
   {
    "comment": "東北本線宇都宮地区(E233-3000;黒磯以南)",
