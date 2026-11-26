@@ -5,7 +5,7 @@
  *  渲染:MapLibre GL JS v6(Globe 投影)+ projectTile 注入自定义 WebGL 列车层
  *  时钟:JST 每帧推算全部在途列车位置,运行时零数据请求
  * ================================================================== */
-import * as maplibregl from '/vendor/maplibre/maplibre-gl.mjs';
+import * as maplibregl from '/jr3d-maptest/vendor/maplibre/maplibre-gl.mjs';
 /* 供 index.html 启动看门狗判定:模块已执行(静态 import 失败时本行不会运行) */
 window.__appJsLoaded = true;
 window.__appVer = 'c3-stopslot'; /* 重叠修复轮 canary:停站轨位+槽位 */
@@ -813,6 +813,7 @@ async function readJsonIdle(res, ctl, onChunk) {
   return JSON.parse(new TextDecoder().decode(await new Blob(chunks).arrayBuffer()));
 }
 async function fetchJSONWithCache(url, phaseKey, fileIdx, silent, outCtl) {
+  if (url.startsWith('/') && !url.startsWith('/jr3d-maptest')) url = '/jr3d-maptest' + url;
   const key = DATA_VERSION + '|' + url;
   const fIdx = fileIdx != null ? fileIdx : nextFileIdx();
   try {
@@ -7079,7 +7080,7 @@ function t3dAttempt(force) {
   /* 重试 nonce:ES 模块对失败的 dynamic import 会按 specifier 缓存拒绝,重试(含手动强制)
      必须换 URL 才会真正重新发请求;Worker 按路径服务、忽略查询串,内容不变 */
   const nonce = ++t3dAttemptN;
-  t3dModP = import('/app/train3d.js?v=t3d16&r=' + nonce)
+  t3dModP = import('/jr3d-maptest/app/train3d.js?v=t3d16&r=' + nonce)
     .then(m => {
       m.init(map);
       /* 首帧渲染看门狗:init 后 8s 仍无渲染帧 → 视为失败(软件渲染/驱动挂等)降级;
@@ -7719,7 +7720,7 @@ window.__t3dTrackFbScan = (M) => {
 /* EXP 覆盖率统计(仅实验分支):全量平日班次 × 真实 pathOf 映射,按等级/线路聚合 */
 window.__t3dCoverage = async () => {
   await M3D.init();
-  const r = await fetch('/data/trains_wd.json');
+  const r = await fetch('/jr3d-maptest/data/trains_wd.json');
   const jj = await r.json();
   const tot = { n: 0, hit: 0 }, byGrade = [{}, {}, {}, {}];
   const missLines = new Map(), hitLines = new Map(), missTmap = new Set(), hitTmap = new Set();
@@ -9026,7 +9027,7 @@ const OP_LOGO = {
 };
 /* 运营商 logo 扩展名归一：真实资产均为 .webp，映射表历史上写成 .png 导致抽屉图标 404。
    首载归一为 .webp；失败时按原始扩展名(.png)重试一次，两级都失败则移除留空（不回退文字）。 */
-function opLogoUrl(rel) { return '/logos/' + String(rel).replace(/\.(png|webp)$/i, '') + '.webp'; }
+function opLogoUrl(rel) { return '/jr3d-maptest/logos/' + String(rel).replace(/\.(png|webp)$/i, '') + '.webp'; }
 document.addEventListener('error', e => {
   const im = e.target;
   if (!im || im.nodeType !== 1 || !im.classList.contains('op-logo')) return;
@@ -11690,7 +11691,7 @@ function muMediaMeta(m) {
       title: muLabel(m),
       artist: sheetStation || '',
       album: muLineOf(m) || T().muT,
-      artwork: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' }]
+      artwork: [{ src: '/jr3d-maptest/icon-192.png', sizes: '192x192', type: 'image/png' }]
     });
   } catch (e) {}
 }
@@ -12950,9 +12951,9 @@ function applyThemeMode() {
 function applyThemeBrand(t) {
   const d = t === 'dark';
   const bi = document.querySelector('#brand .lg img');
-  if (bi) bi.src = d ? '/logo-dark.png' : '/logo.png';
+  if (bi) bi.src = d ? '/jr3d-maptest/logo-dark.png' : '/jr3d-maptest/logo.png';
   const f64 = $('fav64');
-  if (f64) f64.href = d ? '/favicon-dark.png' : '/favicon.png';
+  if (f64) f64.href = d ? '/jr3d-maptest/favicon-dark.png' : '/jr3d-maptest/favicon.png';
 }
 document.querySelectorAll('#themeRow .chip').forEach(c => c.addEventListener('click', () => {
   localStorage.setItem('mjr3d_theme', c.dataset.theme); applyThemeMode(); stateHash();
@@ -13131,7 +13132,7 @@ window.__routeTest = (a, b) => { try { const rt = findRoute(a, b); return rt ? {
 const M3D = (() => {
   const MAX_CACHE = 20;
   const LOCAL = location.protocol === 'file:' || ['localhost', '127.0.0.1'].includes(location.hostname);
-  const BASE = LOCAL ? '' : '';
+  const BASE = LOCAL ? '' : '/jr3d-maptest';
   const u = p => LOCAL ? p.replace(/^\//, '') : BASE + p;
   /* 模型路径映射表(model_map.json):/models/<车型>/consist.json */
   let modelMap = null, mapP = null, avail = null; /* avail: 可用车型目录清单(models/index.json),缺省 null=不过滤 */

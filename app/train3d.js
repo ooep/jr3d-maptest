@@ -25,7 +25,7 @@ const LOD_PX_BACK = 165; /* 滞回:full→stand 用 LOD_PX,stand→full 需 >LOD
    相对路径会 404 → 编组元数据加载失败 → 全部实例判死、3D 永不出现);
    本地预览(file:/localhost)走同源相对路径。与 app.js M3D 的 BASE 口径一致。 */
 const LOCAL = location.protocol === 'file:' || ['localhost', '127.0.0.1'].includes(location.hostname);
-const assetUrl = p => LOCAL ? p.replace(/^\//, '') : '' + p;
+const assetUrl = p => LOCAL ? p.replace(/^\//, '') : (p.startsWith('/jr3d-maptest') ? p : '/jr3d-maptest' + p);
 
 let map = null, renderer = null, scene = null, camera = null, layerOn = false;
 let disabled = false, inited = false;
