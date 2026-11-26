@@ -13179,32 +13179,67 @@ const M3D = (() => {
     texCache.set(key, p);
     return p;
   }
-  /* ── 映射查询:爱称(names) → 途经线路(lines) ── */
-  /* 映射 v2:爱称(names) → 单线(lines) → 组合规则(rules)。
+  /* ── 映射查询:爱称(names) → 组合规则(rules) → 多数线路(majority-line) ── */
+  /* 映射 v3:爱称(names) → 组合规则(rules) → 最长区段线路(majority-line)。
      规则字段:exact(线路集合完全相等) / all(全部包含) / none(任一包含即排除) /
      stopsIn(停站全部∈给定站集,用于实体标记被直通污染的线,如山手) /
-     firstStopIn(首站∈集合)。顺序敏感:先匹配先得。宁缺毋滥:判不了的回退图标。 */
+     firstStopIn(首站∈集合)。顺序敏感:先匹配先得。宁缺毋滥:判不了的回退图标。
+     2026-11-26 pathOf 修复一期:规则提到线路前面(此前线路先命中会遮蔽规则,
+     如山手线环线被東海道本線→315 抢走);站名比较用 normName 归一(时刻表站名
+     带 (東京都) 等后缀,与规则的 plain 站名对不上,如田町(東京都) vs 田町);
+     线路取 majority-line 而非首条(tmaps 的 lines 按登记序号排,常含从未跑过
+     的线,如牟岐線班次首位是高徳線)。 */
+  /* 多数线路(majority-line):班次跑得最长的线路(按区段里程加权)。
+     复用现有的 lineOfPair(区段→线路,已含跳过山手線等守卫)与 pairKm(区段里程),
+     不另建机制。结果缓存于 t._majLine(每班次最多算一次)。无几何信息时
+     (如 EXP 统计用的合成对象)退回旧的首条命中。 */
+  function majorityLine(t) {
+    if (t._majLine !== undefined) return t._majLine;
+    let out = null;
+    const lines = t.lines || [];
+    if (lines.length === 1) {
+      out = modelMap.lines[lines[0]] || null;
+    } else if (t.jasN && t.stopC && typeof lineOfPair === 'function' && typeof pairKm === 'function') {
+      const acc = new Map(); /* 线路 → 里程(km) */
+      const n = t.jasN.length;
+      for (let i = 0; i < n - 1; i++) {
+        const ln = lineOfPair(t, i);
+        if (!ln) continue;
+        const d = pairKm(t, i) || 0;
+        acc.set(ln, (acc.get(ln) || 0) + Math.max(0, d));
+      }
+      /* 按里程降序,取第一个有 model_map 映射的线路 */
+      const ranked = [...acc.entries()].sort((a, b) => b[1] - a[1]);
+      for (const [ln] of ranked) { if (modelMap.lines[ln]) { out = modelMap.lines[ln]; break; } }
+    }
+    if (!out) { /* 退回旧规则:首条命中(覆盖 EXP 合成对象与全段无几何的情形) */
+      for (const ln of lines) { if (modelMap.lines[ln]) { out = modelMap.lines[ln]; break; } }
+    }
+    t._majLine = out; return out;
+  }
   function pathOf(t) {
     if (!modelMap) return null;
     let v = null;
     if (t.nm && modelMap.names[t.nm]) v = modelMap.names[t.nm];
-    if (!v && t.lines) for (let i = 0; i < t.lines.length; i++) { v = modelMap.lines[t.lines[i]]; if (v) break; }
     if (!v && modelMap.rules && t.lines) {
+      /* 站名归一:规则写 plain 站名,时刻表站名带 (東京都) 等后缀,直接比对永远对不上 */
+      const jasN = (t.jas || []).map(normName);
       const ls = new Set(t.lines);
       outer: for (const r of modelMap.rules) {
         if (r.exact) { if (ls.size !== r.exact.length || !r.exact.every(x => ls.has(x))) continue; }
         if (r.all && !r.all.every(x => ls.has(x))) continue;
         if (r.none && r.none.some(x => ls.has(x))) continue;
-        if (r.hasStop && (!t.jas || !r.hasStop.some(s => t.jas.includes(s)))) continue; /* hasStop: 至少一站命中(与 model_map 声明对齐) */
+        if (r.hasStop && (!jasN.length || !r.hasStop.some(s => jasN.includes(s)))) continue; /* hasStop: 至少一站命中(与 model_map 声明对齐) */
         if (r.stopsIn) {
-          if (!t.jas || t.jas.length < 2) continue;
-          const ok2 = t.jas.every(s => r.stopsIn.includes(s));
+          if (jasN.length < 2) continue;
+          const ok2 = jasN.every(s => r.stopsIn.includes(s));
           if (!ok2) continue;
         }
-        if (r.firstStopIn && (!t.jas || !r.firstStopIn.includes(t.jas[0]))) continue;
+        if (r.firstStopIn && (!jasN.length || !r.firstStopIn.includes(jasN[0]))) continue;
         v = r.model; break outer;
       }
     }
+    if (!v && t.lines) v = majorityLine(t);
     if (v && avail && !avail.has(v.split('/')[2])) return null; /* 未同步车型:回退,不发 404 */
     return v || null;
   }

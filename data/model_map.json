@@ -53,7 +53,14 @@
   "MuSKY": "/models/meitetsu-2000-series/consist.json",
   "さくら": "/models/tf2-n700-8000-8car/consist.json",
   "みずほ": "/models/tf2-n700-8000-8car/consist.json",
-  "つばめ": "/models/tf2-n700-8000-8car/consist.json"
+  "つばめ": "/models/tf2-n700-8000-8car/consist.json",
+  "いしづち": "/models/jr-shikoku-8000/consist.json",
+  "しおかぜ": "/models/jr-shikoku-8000/consist.json",
+  "南風": "/models/jr-shikoku-2700/consist.json",
+  "しまんと": "/models/jr-shikoku-2700/consist.json",
+  "あしずり": "/models/jr-shikoku-2700/consist.json",
+  "うずしお": "/models/jr-shikoku-2600/consist.json",
+  "剣山": "/models/jr-shikoku-kiha185/consist.json"
  },
  "lines": {
   "浅草線": "/models/toei-5300-series/consist.json",
