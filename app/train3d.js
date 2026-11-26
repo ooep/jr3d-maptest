@@ -441,7 +441,7 @@ function buildRoot(tmpl, it) {
       o.frustumCulled = false;
       const m = o.material.clone();
       m.transparent = true; m.opacity = 0;
-      fixTrainMat(m); fixRoofMat(m); /* WALLFIX:车顶压暗0.85 */
+      fixTrainMat(m); fixRoofMat(m); fixPaperSide(m, it.path); /* WALLFIX:车顶压暗0.85 */ /* ROOTFIX:纸模 DoubleSide */
       if (nightOn && m.roughnessMap) applyNight(m);
       o.material = m; it.mats.push(m);
     }
@@ -507,6 +507,19 @@ function fixTrainMat(m) {
 function fixRoofMat(m) {
   if (m && m.isMeshStandardMaterial && m.map && typeof m.name === 'string' && /^roof\d*$/.test(m.name)) m.color.multiplyScalar(0.85);
 }
+/* ROOTFIX:纸模材质改 DoubleSide（REDX 方案 A，补充）——俯视/斜视下 FrontSide 车顶贴图不显，
+   DoubleSide 让受电弓/空调/面板贴图显现（同车次 2591 A/B 已证实）。
+   只改纸模：高精度车走 extMaterial（无名，已是 DoubleSide）；tf2 亦有 named GLB 材质，
+   故另以路径前缀排除 tf2-。材质名 + 路径双重判定，不对所有模型一刀切。
+   （实测：纸模 500 个均无 texture、tf2 18 个均无 texture、高精度 118 个均有 texture；
+   无混合 texture 车型；纸模材质名 180 个、tf2 137 个，'roof'/'underfloor' 在 tf2 也出现，
+   故单凭材质名无法区分，必须加路径判定。） */
+function fixPaperSide(m, path) {
+  if (!m || !m.isMeshStandardMaterial) return;
+  if (typeof m.name !== 'string' || m.name === '') return;
+  if (typeof path !== 'string' || path.indexOf('/tf2-') >= 0) return;
+  m.side = THREE.DoubleSide;
+}
 function applyNight(mat) {
   const uni = { nightAmt: { value: 1.0 } };
   mat.nightUni = uni;
@@ -549,6 +562,23 @@ async function m3dCarNode(path, i) {
     return t.__carWraps[i] || null;
   } catch (e) { return null; }
 }
+/* ROOTFIX:量盒子时跳过不可见网格与夜行光束 —— Box3.setFromObject 会把 visible=false
+   的子对象也算进去；首车挂着 32×14 m 隐形前灯光束（白天 visible=false、userData.nightOnly=1），
+   盒子从 2.44×3.39×12.70 膨胀成 14.00×3.39×44.90，sc=12.7/44.9=0.283 把首车压成 28% 扁片。
+   与 checkAxis 的 sizeOf 同口径（跳过不可见网格），另跳过 nightOnly 光束（夜间可见时同样不属车体）。
+   仅 standTmpl 的归一化用；不动 LOD 阈值、不删光束、不动模型。 */
+const _boxOfCarTmp = new THREE.Box3();
+function boxOfCar(nd) {
+  const box = new THREE.Box3().makeEmpty();
+  nd.updateMatrixWorld(true);
+  nd.traverse(o => {
+    if (!o.isMesh || o.visible === false) return;
+    if (o.userData && o.userData.nightOnly) return;
+    if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+    box.union(_boxOfCarTmp.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld));
+  });
+  return box;
+}
 const standLog = [];
 window.__t3dStandLog = () => standLog.slice(-14);
 function standTmpl(path, meta) {
@@ -589,11 +619,11 @@ function standTmpl(path, meta) {
       if (!src) continue;
       const g = src.clone(true);   /* 共享几何/材质;归一化只作用于 clone */
       g.updateMatrixWorld(true);
-      let box = new THREE.Box3().setFromObject(g), sz = box.getSize(new THREE.Vector3());
-      if (sz.x > sz.z) { g.rotation.y += Math.PI / 2; g.updateMatrixWorld(true); box = new THREE.Box3().setFromObject(g); sz = box.getSize(new THREE.Vector3()); }
+      let box = boxOfCar(g), sz = box.getSize(new THREE.Vector3()); /* ROOTFIX:跳过隐形光束量盒 */
+      if (sz.x > sz.z) { g.rotation.y += Math.PI / 2; g.updateMatrixWorld(true); box = boxOfCar(g); sz = box.getSize(new THREE.Vector3()); }
       const sc = sz.z > 1e-6 ? cm.len / sz.z : 1;
       g.scale.multiplyScalar(sc); g.updateMatrixWorld(true);
-      box = new THREE.Box3().setFromObject(g);
+      box = boxOfCar(g);
       const c = box.getCenter(new THREE.Vector3());
       g.position.sub(new THREE.Vector3(c.x, box.min.y, c.z));
       const wrap = new THREE.Group(); wrap.add(g);
@@ -651,7 +681,7 @@ function placeInstances(now) {
           it.rootS = st.group.clone(true);
           it.matsS = []; it.carNodesS = [];
           it.rootS.traverse(o => {
-            if (o.isMesh) { o.frustumCulled = false; const m = o.material.clone(); m.transparent = true; m.opacity = 0; fixTrainMat(m); fixRoofMat(m); o.material = m; it.matsS.push(m); }
+            if (o.isMesh) { o.frustumCulled = false; const m = o.material.clone(); m.transparent = true; m.opacity = 0; fixTrainMat(m); fixRoofMat(m); fixPaperSide(m, it.path); o.material = m; it.matsS.push(m); }
             if (o.userData && o.userData.m3dCar) it.carNodesS.push(o);
           });
           accountPerf(it.rootS);
