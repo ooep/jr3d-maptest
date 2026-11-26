@@ -60,7 +60,8 @@
   "しまんと": "/models/jr-shikoku-2700/consist.json",
   "あしずり": "/models/jr-shikoku-2700/consist.json",
   "うずしお": "/models/jr-shikoku-2600/consist.json",
-  "剣山": "/models/jr-shikoku-kiha185/consist.json"
+  "剣山": "/models/jr-shikoku-kiha185/consist.json",
+  "アクセス特急": "/models/keisei-3100/consist.json"
  },
  "lines": {
   "浅草線": "/models/toei-5300-series/consist.json",
@@ -686,7 +687,54 @@
   "アストラムライン": "/models/astram-7000/consist.json",
   "嵯峨野観光線": "/models/sagano-de10/consist.json",
   "福岡市営地下鉄空港線": "/models/hukuokasub-2000/consist.json",
-  "高野線": "/models/nankai-31000/consist.json"
+  "高野線": "/models/nankai-31000/consist.json",
+  "1号線東山線": "/models/nagoyasub-n1000/consist.json",
+  "2号線名城線・名港線": "/models/nagoyasub-2000/consist.json",
+  "4号線名城線": "/models/nagoyasub-2000/consist.json",
+  "6号線桜通線": "/models/nagoyasub-6050/consist.json",
+  "3号線鶴舞線": "/models/meitetsu-100/consist.json",
+  "大阪モノレール線": "/models/osakamono-3000/consist.json",
+  "国際文化公園都市モノレール線": "/models/osakamono-3000/consist.json",
+  "金沢シーサイド線": "/models/yokohamaseaside-2000/consist.json",
+  "東京メトロ有楽町線": "/models/tokyometro-17000/consist.json",
+  "小田急江ノ島線": "/models/odakyu-4000/consist.json",
+  "桜島線": "/models/jrw323-oloc-8cars/consist.json",
+  "阪急嵐山線": "/models/hankyu-6300-series/consist.json",
+  "甲陽線": "/models/hankyu-6300-series/consist.json",
+  "阪急京都本線": "/models/hankyu-9300/consist.json",
+  "網干線": "/models/sanyo-3000/consist.json",
+  "神戸市営地下鉄山手線": "/models/kobesub-3000/consist.json",
+  "西神線": "/models/tf2-kobe-6000-6car/consist.json",
+  "西神延伸線": "/models/tf2-kobe-6000-6car/consist.json",
+  "動物園線": "/models/keio-7000/consist.json",
+  "近鉄山田線": "/models/kintetsu-5800/consist.json",
+  "近鉄長野線": "/models/kintetsu-5800/consist.json",
+  "jr山口線": "/models/jr-west-kiha40/consist.json",
+  "宇野線": "/models/jrw227-1000-uloc-2cars/consist.json",
+  "呉線": "/models/jrw227-1000-uloc-2cars/consist.json",
+  "佐世保線": "/models/jr-kyusyu-kiha125/consist.json",
+  "城端線": "/models/jr-west-kiha40/consist.json",
+  "氷見線": "/models/jr-west-kiha40/consist.json",
+  "境線": "/models/jr-west-kiha40/consist.json",
+  "岩徳線": "/models/jr-west-kiha40/consist.json",
+  "東武宇都宮線": "/models/tobu-20000/consist.json",
+  "東武鬼怒川線": "/models/tobu-20000/consist.json",
+  "京急空港線": "/models/keikyu-600/consist.json",
+  "関西空港線": "/models/223-2000-8/consist.json",
+  "成田空港線": "/models/keisei-3400/consist.json",
+  "南海空港線": "/models/nankai-2000/consist.json",
+  "小野田線": "/models/jr-west-kiha120/consist.json",
+  "ユーカリが丘線": "/models/yamaman-1000/consist.json",
+  "藤崎線": "/models/kumamotodentetu-01/consist.json",
+  "福塩線": "/models/jr-west-105/consist.json",
+  "豊川線": "/models/meitetsu-1200/consist.json",
+  "各務原線": "/models/meitetsu-1200/consist.json",
+  "築港線": "/models/meitetsu-1200/consist.json",
+  "竜ケ崎線": "/models/kanto-kiha2000/consist.json",
+  "jr奈良線": "/models/221-4/consist.json",
+  "jr日光線": "/models/jr-e131-600-series-yamatn6/consist.json",
+  "太多線": "/models/jr-tokai-kiha25/consist.json",
+  "伊勢線": "/models/jr-tokai-kiha25/consist.json"
  },
  "rules": [
   {
@@ -929,6 +977,13 @@
    "model": "/models/jr-east-e235-1000-series/consist.json"
   },
   {
+   "comment": "総武本線千葉以東(209系;千葉-銚子)",
+   "exact": [
+    "総武本線"
+   ],
+   "model": "/models/209-21k/consist.json"
+  },
+  {
    "comment": "成田線我孫子支線/成田線(209系)",
    "all": [
     "成田線"
@@ -1057,6 +1112,13 @@
     "常総線"
    ],
    "model": "/models/kanto-railway-dc2100-dmu/consist.json"
+  },
+  {
+   "comment": "東北本線宇都宮地区(E233-3000;黒磯以南)",
+   "exact": [
+    "東北本線"
+   ],
+   "model": "/models/jr-east-series-e233-3000-10/consist.json"
   }
  ]
 }
